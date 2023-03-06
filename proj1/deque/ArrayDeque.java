@@ -1,7 +1,7 @@
 package deque;
 
 
-public class ArrayDeque<Item> {
+public class ArrayDeque<Item> implements Deque<Item> {
 
     private int size;
     private int start, end;

@@ -1,6 +1,6 @@
 package deque;
 
-public class LinkedListDeque<Item> {
+public class LinkedListDeque<Item> implements Deque<Item> {
     private class ItemNode {
         public Item item;
         public ItemNode prev;
@@ -130,4 +130,14 @@ public class LinkedListDeque<Item> {
         return node.item;
     }
 
+    private Item getRecursiveHelper(int index, ItemNode node) {
+        return index == 0 ? node.item : getRecursiveHelper(index - 1, node.next);
+    }
+
+    public Item getRecursive(int index) {
+        if (index < 0 || index >= size) {
+            return null;
+        }
+        return getRecursiveHelper(index, sentinel.next);
+    }
 }
