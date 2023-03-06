@@ -125,4 +125,49 @@ public class ArrayDequeTest {
             assertEquals("Should have the same value", i, (double) lld1.removeLast(), 0.0);
         }
     }
+
+
+    @Test
+    public void forEachTest() {
+        ArrayDeque<Integer> lld1 = new ArrayDeque<Integer>();
+        for (int i = 0; i < 100; i++) {
+            lld1.addLast(i);
+        }
+        int i = 0;
+        for (int item : lld1) {
+            assertEquals("Should have the same value", i, item, 0.0);
+            i++;
+        }
+    }
+
+    @Test
+    public void equalTestEasy() {
+        ArrayDeque<Integer> lld1 = new ArrayDeque<Integer>();
+        ArrayDeque<Integer> lld2 = new ArrayDeque<Integer>();
+        ArrayDeque<Integer> lld3 = new ArrayDeque<Integer>();
+
+        for (int i = 0; i < 100; i++) {
+            lld1.addLast(i);
+            lld2.addLast(i);
+            lld3.addLast(i);
+        }
+
+        lld3.removeLast();
+        assertEquals("Should have the same value", true, lld1.equals(lld2));
+        assertEquals("Should have the same value", false, lld1.equals(lld3));
+
+    }
+
+    @Test
+    public void equalTestMedium() {
+        ArrayDeque<Integer> lld1 = new ArrayDeque<>();
+        ArrayDeque<String> lld2 = new ArrayDeque<>();
+
+        for (int i = 0; i < 100; i++) {
+            lld1.addLast(i);
+            lld2.addLast("" + i);
+        }
+        assertEquals("Should have the same value", false, lld1.equals(lld2));
+
+    }
 }

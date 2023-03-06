@@ -136,4 +136,61 @@ public class LinkedListDequeTest {
             assertEquals("Should have the same value", i, (double) lld1.getRecursive(i), 0.0);
         }
     }
+
+    @Test
+    public void forEachTest() {
+        LinkedListDeque<Integer> lld1 = new LinkedListDeque<Integer>();
+        for (int i = 0; i < 100; i++) {
+            lld1.addLast(i);
+        }
+        int i = 0;
+        for (int item : lld1) {
+            assertEquals("Should have the same value", i, item, 0.0);
+            i++;
+        }
+    }
+
+    @Test
+    public void equalTestEasy() {
+        LinkedListDeque<Integer> lld1 = new LinkedListDeque<Integer>();
+        LinkedListDeque<Integer> lld2 = new LinkedListDeque<Integer>();
+        LinkedListDeque<Integer> lld3 = new LinkedListDeque<Integer>();
+
+        for (int i = 0; i < 100; i++) {
+            lld1.addLast(i);
+            lld2.addLast(i);
+            lld3.addLast(i);
+        }
+
+        lld3.removeLast();
+        assertEquals("Should have the same value", true, lld1.equals(lld2));
+        assertEquals("Should have the same value", false, lld1.equals(lld3));
+
+    }
+
+    @Test
+    public void equalTestMedium() {
+        LinkedListDeque<Integer> lld1 = new LinkedListDeque<>();
+        LinkedListDeque<String> lld2 = new LinkedListDeque<>();
+
+        for (int i = 0; i < 100; i++) {
+            lld1.addLast(i);
+            lld2.addLast("" + i);
+        }
+        assertEquals("Should have the same value", false, lld1.equals(lld2));
+
+    }
+
+    @Test
+    public void equalTestHard() {
+        LinkedListDeque<Integer> lld1 = new LinkedListDeque<>();
+        ArrayDeque<Integer> lld2 = new ArrayDeque<>();
+
+        for (int i = 0; i < 100; i++) {
+            lld1.addLast(i);
+            lld2.addLast(i);
+        }
+        assertEquals("Should have the same value", true, lld1.equals(lld2));
+
+    }
 }
