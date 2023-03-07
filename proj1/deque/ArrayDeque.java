@@ -134,7 +134,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     private class ArrayIterator implements Iterator<T> {
         private int pos;
 
-        public ArrayIterator() {
+        ArrayIterator() {
             pos = 0;
         }
 
