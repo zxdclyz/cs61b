@@ -137,18 +137,18 @@ public class LinkedListDequeTest {
         }
     }
 
-//    @Test
-//    public void forEachTest() {
-//        LinkedListDeque<Integer> lld1 = new LinkedListDeque<Integer>();
-//        for (int i = 0; i < 100; i++) {
-//            lld1.addLast(i);
-//        }
-//        int i = 0;
-//        for (int item : lld1) {
-//            assertEquals("Should have the same value", i, item, 0.0);
-//            i++;
-//        }
-//    }
+    @Test
+    public void forEachTest() {
+        LinkedListDeque<Integer> lld1 = new LinkedListDeque<Integer>();
+        for (int i = 0; i < 100; i++) {
+            lld1.addLast(i);
+        }
+        int i = 0;
+        for (int item : lld1) {
+            assertEquals("Should have the same value", i, item, 0.0);
+            i++;
+        }
+    }
 
     @Test
     public void equalTestEasy() {
