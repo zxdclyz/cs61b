@@ -31,6 +31,7 @@ public class LinkedListDeque<Item> implements Deque<Item>, Iterable<Item> {
     /**
      * Adds an item to the front of the deque.
      */
+    @Override
     public void addFirst(Item item) {
         size++;
         ItemNode node = new ItemNode(item, sentinel, sentinel.next);
@@ -41,6 +42,7 @@ public class LinkedListDeque<Item> implements Deque<Item>, Iterable<Item> {
     /**
      * Adds an item to the back of the deque.
      */
+    @Override
     public void addLast(Item item) {
         size++;
         ItemNode node = new ItemNode(item, sentinel.prev, sentinel);
@@ -49,15 +51,9 @@ public class LinkedListDeque<Item> implements Deque<Item>, Iterable<Item> {
     }
 
     /**
-     * Returns true if deque is empty, false otherwise.
-     */
-    public boolean isEmpty() {
-        return size == 0;
-    }
-
-    /**
      * Returns the number of items in the deque.
      */
+    @Override
     public int size() {
         return size;
     }
@@ -65,6 +61,7 @@ public class LinkedListDeque<Item> implements Deque<Item>, Iterable<Item> {
     /**
      * Prints the items in the deque from first to last.
      */
+    @Override
     public void printDeque() {
         for (int i = 0; i < size; i++) {
             Item item = get(i);
@@ -77,6 +74,7 @@ public class LinkedListDeque<Item> implements Deque<Item>, Iterable<Item> {
     /**
      * Removes and returns the item at the front of the deque. If no such item exists, returns null.
      */
+    @Override
     public Item removeFirst() {
         if (size == 0) {
             return null;
@@ -91,6 +89,7 @@ public class LinkedListDeque<Item> implements Deque<Item>, Iterable<Item> {
     /**
      * Removes and returns the item at the back of the deque. If no such item exists, returns null.
      */
+    @Override
     public Item removeLast() {
         if (size == 0) {
             return null;
@@ -106,6 +105,7 @@ public class LinkedListDeque<Item> implements Deque<Item>, Iterable<Item> {
      * Gets the item at the given index, where 0 is the front, 1 is the next item, and so forth.
      * If no such item exists, returns null. Must not alter the deque!
      */
+    @Override
     public Item get(int index) {
         if (index < 0 || index >= size) {
             return null;
@@ -151,10 +151,12 @@ public class LinkedListDeque<Item> implements Deque<Item>, Iterable<Item> {
         }
     }
 
+    @Override
     public Iterator<Item> iterator() {
         return new LinkedListIterator();
     }
 
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
