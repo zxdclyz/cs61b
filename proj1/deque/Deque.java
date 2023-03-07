@@ -1,7 +1,5 @@
 package deque;
 
-import java.util.Iterator;
-
 public interface Deque<Item> {
     /**
      * Adds an item to the front of the deque
@@ -45,14 +43,4 @@ public interface Deque<Item> {
      * If no such item exists, returns null. Must not alter the deque!
      */
     Item get(int index);
-
-    /**
-     * Return an iterator.
-     */
-    Iterator<Item> iterator();
-
-    /**
-     * Returns whether the parameter o is equal to the Deque.
-     */
-    boolean equals(Object o);
 }
