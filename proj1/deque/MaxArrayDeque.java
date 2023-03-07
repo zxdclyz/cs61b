@@ -2,11 +2,11 @@ package deque;
 
 import java.util.Comparator;
 
-public class MaxArrayDeque<Item> extends ArrayDeque<Item> {
+public class MaxArrayDeque<T> extends ArrayDeque<T> {
 
-    private Comparator<Item> comparator;
+    private Comparator<T> comparator;
 
-    public MaxArrayDeque(Comparator<Item> c) {
+    public MaxArrayDeque(Comparator<T> c) {
         super();
         comparator = c;
     }
@@ -14,13 +14,13 @@ public class MaxArrayDeque<Item> extends ArrayDeque<Item> {
     /**
      * Returns the maximum element in the deque as governed by the previously given Comparator
      */
-    public Item max() {
+    public T max() {
         if (size() == 0) {
             return null;
         }
-        Item m = get(0);
+        T m = get(0);
         for (int i = 1; i < size(); i++) {
-            Item item = get(i);
+            T item = get(i);
             if (comparator.compare(item, m) > 0) {
                 m = item;
             }
@@ -31,7 +31,7 @@ public class MaxArrayDeque<Item> extends ArrayDeque<Item> {
     /**
      * Returns the maximum element in the deque as governed by the parameter Comparator c
      */
-    public Item max(Comparator<Item> c) {
+    public T max(Comparator<T> c) {
 
         if (c == null) {
             return null;
@@ -39,9 +39,9 @@ public class MaxArrayDeque<Item> extends ArrayDeque<Item> {
         if (size() == 0) {
             return null;
         }
-        Item m = get(0);
+        T m = get(0);
         for (int i = 1; i < size(); i++) {
-            Item item = get(i);
+            T item = get(i);
             if (c.compare(item, m) > 0) {
                 m = item;
             }
