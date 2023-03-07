@@ -6,18 +6,18 @@ import java.util.Comparator;
 
 import static org.junit.Assert.assertEquals;
 
-public class MaxArrayTest {
+public class MaxArrayDequeTest {
 
     @Test
     public void numberTest() {
-        class numberCmp implements Comparator<Integer> {
+        class NumberCmp implements Comparator<Integer> {
             @Override
             public int compare(Integer o1, Integer o2) {
                 return o1 - o2;
             }
         }
 
-        MaxArrayDeque<Integer> mad = new MaxArrayDeque<>(new numberCmp());
+        MaxArrayDeque<Integer> mad = new MaxArrayDeque<>(new NumberCmp());
         mad.addLast(1);
         mad.addLast(3);
         mad.addLast(2);
@@ -28,24 +28,24 @@ public class MaxArrayTest {
 
     @Test
     public void stringTest() {
-        class stringCmp implements Comparator<String> {
+        class StringCmp implements Comparator<String> {
             @Override
             public int compare(String o1, String o2) {
                 return o1.compareTo(o2);
             }
         }
-        class stringCmp2 implements Comparator<String> {
+        class StringCmp2 implements Comparator<String> {
             @Override
             public int compare(String o1, String o2) {
                 return -o1.compareTo(o2);
             }
         }
 
-        MaxArrayDeque<String> mad = new MaxArrayDeque<>(new stringCmp());
+        MaxArrayDeque<String> mad = new MaxArrayDeque<>(new StringCmp());
         mad.addLast("abc");
         mad.addLast("A");
         mad.addLast("BB");
-        String m = mad.max(new stringCmp2());
+        String m = mad.max(new StringCmp2());
         assertEquals("A", m);
     }
 }
