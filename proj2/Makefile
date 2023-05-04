@@ -42,3 +42,6 @@ clean:
 	$(RMAKE) -C $(PACKAGE) clean
 	$(RMAKE) -C testing clean
 
+# 'make reset' will clean up and reset the repo
+reset:clean
+	$(RM) -r .gitlet
