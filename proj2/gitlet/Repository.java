@@ -3,6 +3,7 @@ package gitlet;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 
 import static gitlet.Utils.*;
 
@@ -109,5 +110,57 @@ public class Repository {
         String sha1 = c.save();
         StageArea.clear();
         branches.put(HEAD, sha1);
+    }
+
+    public static void log() {
+        String currentNode = branches.get(HEAD);
+        while (currentNode != null) {
+            Commit c = Commit.load(currentNode);
+            assert c != null;
+
+            System.out.println("===");
+            System.out.println("commit " + currentNode);
+            String sp = c.getSecondParent();
+            if (sp != null) {
+                System.out.println("Merge: " + c.getParent().substring(0, 7) + " " + sp.substring(0, 7));
+            }
+            System.out.println("Date: " + c.getTimeString());
+            System.out.println(c.getMessage());
+            System.out.println();
+
+            currentNode = c.getParent();
+        }
+    }
+
+    /**
+     * Fix the commit id to 40 chars
+     *
+     * @param id short id
+     * @return fixed id
+     */
+    public String fixCommitId(String id) {
+        for (String fName : Objects.requireNonNull(join(GITLET_DIR, "blobs").list())) {
+            if (fName.startsWith(id)) {
+                return fName;
+            }
+        }
+        return null;
+    }
+
+    public static void checkout(String fileName, String commitId) {
+        if (commitId == null) {
+            commitId = branches.get(HEAD);
+        }
+        Commit c = Commit.load(commitId);
+        if (c == null) {
+            System.out.println("No commit with that id exists.");
+            return;
+        }
+        if (!c.ref.containsKey(fileName)) {
+            System.out.println("File does not exist in that commit.");
+            return;
+        }
+        byte[] fileContent = readContents(join(GITLET_DIR, "blobs", c.ref.get(fileName)));
+        writeContents(join(CWD, fileName), (Object) fileContent);
     }
 }

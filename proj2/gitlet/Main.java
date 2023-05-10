@@ -13,7 +13,6 @@ public class Main {
      * Usage: java gitlet.Main ARGS, where ARGS contains
      * <COMMAND> <OPERAND1> <OPERAND2> ...
      * <p>
-     * TODO: check operands
      */
     public static void main(String[] args) {
         if (!operandCheck(args)) {
@@ -31,6 +30,21 @@ public class Main {
             case "status" -> status();
             case "rm" -> StageArea.rm(new File(args[1]));
             case "commit" -> Repository.commit(args[1]);
+            case "log" -> Repository.log();
+            case "checkout" -> {
+                if (args.length == 2) {
+                    // TODO: checkout branch
+                    assert true;
+                } else if (args.length == 3 && args[1].equals("--")) {
+                    // checkout -- [file name]
+                    Repository.checkout(args[2], null);
+                } else if (args.length == 4 && args[2].equals("--")) {
+                    // checkout [commit id] -- [file name]
+                    Repository.checkout(args[3], args[1]);
+                } else {
+                    System.out.println("Please enter a command.");
+                }
+            }
 
             default -> System.out.println("No command with that name exists.");
         }
@@ -47,7 +61,7 @@ public class Main {
         }
 
         switch (args[0]) {
-            case "init", "status" -> {
+            case "init", "status", "log" -> {
                 if (args.length != 1) {
                     System.out.println("Incorrect operands.");
                     return false;
@@ -55,6 +69,12 @@ public class Main {
             }
             case "add", "rm", "commit" -> {
                 if (args.length != 2) {
+                    System.out.println("Incorrect operands.");
+                    return false;
+                }
+            }
+            case "checkout" -> {
+                if (!(args.length == 2 || args.length == 3 || args.length == 4)) {
                     System.out.println("Incorrect operands.");
                     return false;
                 }

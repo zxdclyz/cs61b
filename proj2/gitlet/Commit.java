@@ -3,9 +3,7 @@ package gitlet;
 import java.io.File;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date; // TODO: You'll likely use this in this class
-import java.util.HashMap;
+import java.util.*;
 
 import static gitlet.Utils.*;
 
@@ -58,6 +56,7 @@ public class Commit implements Serializable {
         this.parent = parent;
 
         Commit parentCommit = load(parent);
+        assert parentCommit != null;
         this.ref = parentCommit.ref;
         HashMap<String, String> addition = StageArea.getAddition();
         ArrayList<String> removal = StageArea.getRemoval();
@@ -84,13 +83,17 @@ public class Commit implements Serializable {
         return parent;
     }
 
+    public String getSecondParent() {
+        return this.secondParent;
+    }
+
     public Date getTimestamp() {
         return this.timestamp;
     }
 
     public String getTimeString() {
-        SimpleDateFormat ft = new SimpleDateFormat("E yyyy.MM.dd 'at' hh:mm:ss a zzz");
-        return ft.format(this.timestamp);
+        Formatter f = new Formatter(Locale.US);
+        return f.format("%1$ta %1$tb %1$td %1$tT %1$tY %1$tz", this.timestamp).toString();
     }
 
     /**
@@ -104,7 +107,7 @@ public class Commit implements Serializable {
         return fileName;
     }
 
-    public Commit load(String sha1) {
+    public static Commit load(String sha1) {
         File f = join(Repository.GITLET_DIR, "blobs", sha1);
         if (!f.exists()) {
             return null;
