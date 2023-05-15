@@ -110,7 +110,6 @@ public class StageArea {
             rm = true;
             data.removal.add(fileName);
             if (f.exists()) {
-//                data.contents.put(fileName, readContents(f));
                 f.delete();
             }
         }

@@ -45,6 +45,10 @@ public class Main {
                     System.out.println("Please enter a command.");
                 }
             }
+            case "branch" -> Repository.branch(args[1]);
+            case "rm-branch" -> Repository.removeBranch(args[1]);
+            case "global-log" -> Repository.globalLog();
+            case "find" -> Repository.find(args[1]);
 
             default -> System.out.println("No command with that name exists.");
         }
@@ -61,13 +65,13 @@ public class Main {
         }
 
         switch (args[0]) {
-            case "init", "status", "log" -> {
+            case "init", "status", "log", "global-log" -> {
                 if (args.length != 1) {
                     System.out.println("Incorrect operands.");
                     return false;
                 }
             }
-            case "add", "rm", "commit" -> {
+            case "add", "rm", "commit", "branch", "rm-branch", "find" -> {
                 if (args.length != 2) {
                     System.out.println("Incorrect operands.");
                     return false;

@@ -77,10 +77,14 @@ public class Repository {
         //          heads
         //          HEAD
         //      blobs/ -- saving commits and snapshots
+        //          commits/
+        //          snapshots/
         //      index -- staging area
         GITLET_DIR.mkdir();
         join(GITLET_DIR, "refs").mkdir();
-        join(GITLET_DIR, "blobs").mkdir();
+        join(GITLET_DIR, "blobs", "commits").mkdirs();
+        join(GITLET_DIR, "blobs", "snapshots").mkdirs();
+
 
         // create and save init commit
         Commit initCommit = new Commit();
@@ -92,7 +96,7 @@ public class Repository {
 
     public static Commit getHeadCommit() {
         String fileName = branches.get(HEAD);
-        return readObject(join(GITLET_DIR, "blobs", fileName), Commit.class);
+        return readObject(join(GITLET_DIR, "blobs", "commits", fileName), Commit.class);
     }
 
     public static void commit(String message) {
@@ -132,14 +136,31 @@ public class Repository {
         }
     }
 
+    public static void globalLog() {
+        for (String id : Objects.requireNonNull(plainFilenamesIn(join(GITLET_DIR, "blobs", "commits")))) {
+            Commit c = Commit.load(id);
+            assert c != null;
+
+            System.out.println("===");
+            System.out.println("commit " + id);
+            String sp = c.getSecondParent();
+            if (sp != null) {
+                System.out.println("Merge: " + c.getParent().substring(0, 7) + " " + sp.substring(0, 7));
+            }
+            System.out.println("Date: " + c.getTimeString());
+            System.out.println(c.getMessage());
+            System.out.println();
+        }
+    }
+
     /**
      * Fix the commit id to 40 chars
      *
      * @param id short id
      * @return fixed id
      */
-    public String fixCommitId(String id) {
-        for (String fName : Objects.requireNonNull(join(GITLET_DIR, "blobs").list())) {
+    public static String fixCommitId(String id) {
+        for (String fName : Objects.requireNonNull(join(GITLET_DIR, "blobs", "commits").list())) {
             if (fName.startsWith(id)) {
                 return fName;
             }
@@ -151,6 +172,10 @@ public class Repository {
         if (commitId == null) {
             commitId = branches.get(HEAD);
         }
+        if (commitId.length() < 40) {
+            commitId = fixCommitId(commitId);
+        }
+
         Commit c = Commit.load(commitId);
         if (c == null) {
             System.out.println("No commit with that id exists.");
@@ -160,7 +185,45 @@ public class Repository {
             System.out.println("File does not exist in that commit.");
             return;
         }
-        byte[] fileContent = readContents(join(GITLET_DIR, "blobs", c.ref.get(fileName)));
+        byte[] fileContent = readContents(join(GITLET_DIR, "blobs", "snapshots", c.ref.get(fileName)));
         writeContents(join(CWD, fileName), (Object) fileContent);
+    }
+
+    public static void branch(String branchName) {
+        if (branches.containsKey(branchName)) {
+            System.out.println("A branch with that name already exists.");
+            return;
+        }
+        branches.put(branchName, branches.get(HEAD));
+    }
+
+    public static void removeBranch(String branchName) {
+        if (!branches.containsKey(branchName)) {
+            System.out.println("A branch with that name does not exist.");
+            return;
+        }
+        if (branches.get(HEAD).equals(branchName)) {
+            System.out.println("Cannot remove the current branch.");
+            return;
+        }
+        branches.remove(branchName);
+    }
+
+    public static void find(String message) {
+        ArrayList<String> results = new ArrayList<>();
+        for (String id : Objects.requireNonNull(plainFilenamesIn(join(GITLET_DIR, "blobs", "commits")))) {
+            Commit c = Commit.load(id);
+            assert c != null;
+
+            if (c.getMessage().equals(message)) {
+                results.add(id);
+            }
+        }
+        if (results.isEmpty()) {
+            System.out.println("Found no commit with that message.");
+        }
+        for (String id : results) {
+            System.out.println(id);
+        }
     }
 }

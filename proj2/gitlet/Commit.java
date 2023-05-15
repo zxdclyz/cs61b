@@ -66,7 +66,7 @@ public class Commit implements Serializable {
             // update the ref
             this.ref.put(fileName, hash);
             // save the new snapshot
-            writeContents(join(Repository.GITLET_DIR, "blobs", hash), (Object) contents.get(fileName));
+            writeContents(join(Repository.GITLET_DIR, "blobs", "snapshots", hash), (Object) contents.get(fileName));
         }
         for (String fileName : removal) {
             this.ref.remove(fileName);
@@ -103,12 +103,12 @@ public class Commit implements Serializable {
      */
     public String save() {
         String fileName = sha1((Object) serialize(this));
-        writeObject(join(Repository.GITLET_DIR, "blobs", fileName), this);
+        writeObject(join(Repository.GITLET_DIR, "blobs", "commits", fileName), this);
         return fileName;
     }
 
     public static Commit load(String sha1) {
-        File f = join(Repository.GITLET_DIR, "blobs", sha1);
+        File f = join(Repository.GITLET_DIR, "blobs", "commits", sha1);
         if (!f.exists()) {
             return null;
         }
