@@ -37,15 +37,16 @@ public class Repository {
     /**
      * Load the saved variables
      */
-    public static void load() {
+    public static boolean load() {
         // check if .gitlet exits
         if (!Repository.GITLET_DIR.exists()) {
-            return;
+            return false;
         }
         // if exists, should assure that the subdir exits
         File refDIR = join(Repository.GITLET_DIR, "refs");
         HEAD = readObject(join(refDIR, "HEAD"), String.class);
         branches = (HashMap<String, String>) readObject(join(refDIR, "heads"), HashMap.class);
+        return true;
     }
 
     /**

@@ -20,10 +20,17 @@ public class Main {
         }
 
         // Read the variables from file
-        Repository.load();
-        StageArea.load();
+        boolean isGitletRepo = Repository.load();
+        if (isGitletRepo) {
+            StageArea.load();
+        }
 
         String firstArg = args[0];
+        if (!isGitletRepo && !firstArg.equals("init")) {
+            System.out.println("Not in an initialized Gitlet directory.");
+            return;
+        }
+
         switch (firstArg) {
             case "init" -> Repository.init();
             case "add" -> StageArea.add(new File(args[1]));

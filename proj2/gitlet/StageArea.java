@@ -14,7 +14,7 @@ import static gitlet.Utils.*;
  * <p>
  * Saves the staged files
  *
- * @author zxdcly
+ * @author zxdclyz
  */
 public class StageArea {
     private static class StagedData implements Serializable {
