@@ -201,23 +201,19 @@ public class Repository {
         writeContents(join(CWD, fileName), (Object) fileContent);
     }
 
-    public static void checkoutBranch(String branchName) {
-        if (!branches.containsKey(branchName)) {
-            System.out.println("No such branch exists.");
-            return;
-        }
-        if (branchName.equals(HEAD)) {
-            System.out.println("No need to checkout the current branch.");
-            return;
-        }
-
+    /**
+     * Checkout to a commit, doesn't modify the current HEAD
+     *
+     * @param dstCommitId Destination commit id
+     */
+    private static void checkout(String dstCommitId) {
         // get all files in the CWD
         List<String> filesInCWD = Utils.plainFilenamesIn(CWD);
         if (filesInCWD == null)
             filesInCWD = new ArrayList<>();
         // get the current commit and destination commit
         Commit cur = getHeadCommit();
-        Commit dst = Commit.load(branches.get(branchName));
+        Commit dst = Commit.load(dstCommitId);
         assert dst != null;
 
         // check for untracked files
@@ -246,8 +242,34 @@ public class Repository {
         }
 
         StageArea.clear();
+    }
+
+    public static void checkoutBranch(String branchName) {
+        if (!branches.containsKey(branchName)) {
+            System.out.println("No such branch exists.");
+            return;
+        }
+        if (branchName.equals(HEAD)) {
+            System.out.println("No need to checkout the current branch.");
+            return;
+        }
+
+        checkout(branches.get(branchName));
+
         // make new branch current head
         HEAD = branchName;
+    }
+
+    public static void reset(String commitId) {
+        String fullCommitId = fixCommitId(commitId);
+        if (fullCommitId == null) {
+            System.out.println("No commit with that id exists.");
+            return;
+        }
+        checkout(fullCommitId);
+
+        // change HEAD
+        branches.put(HEAD, fullCommitId);
     }
 
     public static void branch(String branchName) {

@@ -54,6 +54,7 @@ public class Main {
             }
             case "branch" -> Repository.branch(args[1]);
             case "rm-branch" -> Repository.removeBranch(args[1]);
+            case "reset" -> Repository.reset(args[1]);
             case "global-log" -> Repository.globalLog();
             case "find" -> Repository.find(args[1]);
 
