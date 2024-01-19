@@ -3,6 +3,7 @@ package gitlet;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 
 import static gitlet.Utils.*;
@@ -126,19 +127,21 @@ public class Repository {
             System.out.println("===");
             System.out.println("commit " + currentNode);
             String sp = c.getSecondParent();
+            String parent = c.getParent();
             if (sp != null) {
-                System.out.println("Merge: " + c.getParent().substring(0, 7) + " " + sp.substring(0, 7));
+                System.out.println("Merge: " + parent.substring(0, 7) + " " + sp.substring(0, 7));
             }
             System.out.println("Date: " + c.getTimeString());
             System.out.println(c.getMessage());
             System.out.println();
 
-            currentNode = c.getParent();
+            currentNode = parent;
         }
     }
 
     public static void globalLog() {
-        for (String id : Objects.requireNonNull(plainFilenamesIn(join(GITLET_DIR, "blobs", "commits")))) {
+        List<String> commits = getAllCommitIds();
+        for (String id : commits) {
             Commit c = Commit.load(id);
             assert c != null;
 
@@ -152,6 +155,14 @@ public class Repository {
             System.out.println(c.getMessage());
             System.out.println();
         }
+    }
+
+    private static List<String> getAllCommitIds() {
+        List<String> commits = plainFilenamesIn(join(GITLET_DIR, "blobs", "commits"));
+
+        // this should not happen, cause there always be an initial commit
+        assert commits != null;
+        return commits;
     }
 
     /**
@@ -212,7 +223,9 @@ public class Repository {
 
     public static void find(String message) {
         ArrayList<String> results = new ArrayList<>();
-        for (String id : Objects.requireNonNull(plainFilenamesIn(join(GITLET_DIR, "blobs", "commits")))) {
+        List<String> commits = getAllCommitIds();
+
+        for (String id : commits) {
             Commit c = Commit.load(id);
             assert c != null;
 
@@ -220,6 +233,7 @@ public class Repository {
                 results.add(id);
             }
         }
+
         if (results.isEmpty()) {
             System.out.println("Found no commit with that message.");
         }

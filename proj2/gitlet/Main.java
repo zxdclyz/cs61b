@@ -49,7 +49,7 @@ public class Main {
                     // checkout [commit id] -- [file name]
                     Repository.checkout(args[3], args[1]);
                 } else {
-                    System.out.println("Please enter a command.");
+                    System.out.println("Incorrect operands.");
                 }
             }
             case "branch" -> Repository.branch(args[1]);

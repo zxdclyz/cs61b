@@ -89,6 +89,9 @@ public class StageArea {
             data.addition.put(fileName, hash);
             data.contents.put(fileName, content);
         }
+        
+        // remove if in removal area
+        data.removal.remove(fileName);
     }
 
     public static Set<String> getStagedFiles() {
