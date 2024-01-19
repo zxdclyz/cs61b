@@ -1,10 +1,7 @@
 package gitlet;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import static gitlet.Utils.*;
 
@@ -33,7 +30,7 @@ public class Repository {
     /**
      * Map which tracks the HEAD of each branch
      */
-    public static HashMap<String, String> branches;
+    public static TreeMap<String, String> branches;
 
     /**
      * Load the saved variables
@@ -46,7 +43,7 @@ public class Repository {
         // if exists, should assure that the subdir exits
         File refDIR = join(Repository.GITLET_DIR, "refs");
         HEAD = readObject(join(refDIR, "HEAD"), String.class);
-        branches = (HashMap<String, String>) readObject(join(refDIR, "heads"), HashMap.class);
+        branches = (TreeMap<String, String>) readObject(join(refDIR, "heads"), TreeMap.class);
         return true;
     }
 
@@ -92,7 +89,7 @@ public class Repository {
         Commit initCommit = new Commit();
         String sha1 = initCommit.save();
         HEAD = "master";
-        branches = new HashMap<>();
+        branches = new TreeMap<>();
         branches.put(HEAD, sha1);
     }
 
@@ -285,7 +282,7 @@ public class Repository {
             System.out.println("A branch with that name does not exist.");
             return;
         }
-        if (branches.get(HEAD).equals(branchName)) {
+        if (HEAD.equals(branchName)) {
             System.out.println("Cannot remove the current branch.");
             return;
         }
