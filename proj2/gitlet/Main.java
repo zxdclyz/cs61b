@@ -40,8 +40,8 @@ public class Main {
             case "log" -> Repository.log();
             case "checkout" -> {
                 if (args.length == 2) {
-                    // TODO: checkout branch
-                    assert true;
+                    // checkout [branch name]
+                    Repository.checkoutBranch(args[1]);
                 } else if (args.length == 3 && args[1].equals("--")) {
                     // checkout -- [file name]
                     Repository.checkout(args[2], null);

@@ -89,7 +89,7 @@ public class StageArea {
             data.addition.put(fileName, hash);
             data.contents.put(fileName, content);
         }
-        
+
         // remove if in removal area
         data.removal.remove(fileName);
     }
@@ -112,9 +112,7 @@ public class StageArea {
         if (head.ref.containsKey(fileName)) {
             rm = true;
             data.removal.add(fileName);
-            if (f.exists()) {
-                f.delete();
-            }
+            if (f.exists()) f.delete();
         }
         if (!rm) {
             System.out.println("No reason to remove the file.");

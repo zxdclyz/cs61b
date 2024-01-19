@@ -201,6 +201,55 @@ public class Repository {
         writeContents(join(CWD, fileName), (Object) fileContent);
     }
 
+    public static void checkoutBranch(String branchName) {
+        if (!branches.containsKey(branchName)) {
+            System.out.println("No such branch exists.");
+            return;
+        }
+        if (branchName.equals(HEAD)) {
+            System.out.println("No need to checkout the current branch.");
+            return;
+        }
+
+        // get all files in the CWD
+        List<String> filesInCWD = Utils.plainFilenamesIn(CWD);
+        if (filesInCWD == null)
+            filesInCWD = new ArrayList<>();
+        // get the current commit and destination commit
+        Commit cur = getHeadCommit();
+        Commit dst = Commit.load(branches.get(branchName));
+        assert dst != null;
+
+        // check for untracked files
+        for (String file : filesInCWD) {
+            if (!cur.ref.containsKey(file) && dst.ref.containsKey(file)) {
+                System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                return;
+            }
+        }
+        // do checkout
+        dst.ref.forEach((file, hash) -> {
+            // write new contents
+            if (cur.ref.getOrDefault(file, "").equals(hash)) {
+                // skip if file is the same as cur
+                return;
+            }
+            byte[] fileContent = readContents(join(GITLET_DIR, "blobs", "snapshots", hash));
+            writeContents(join(CWD, file), (Object) fileContent);
+        });
+        for (String file : filesInCWD) {
+            // delete files not in new branch
+            if (!dst.ref.containsKey(file)) {
+                File fileToRm = join(CWD, file);
+                if (fileToRm.exists()) fileToRm.delete();
+            }
+        }
+
+        StageArea.clear();
+        // make new branch current head
+        HEAD = branchName;
+    }
+
     public static void branch(String branchName) {
         if (branches.containsKey(branchName)) {
             System.out.println("A branch with that name already exists.");
