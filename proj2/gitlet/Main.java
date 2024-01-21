@@ -57,6 +57,7 @@ public class Main {
             case "reset" -> Repository.reset(args[1]);
             case "global-log" -> Repository.globalLog();
             case "find" -> Repository.find(args[1]);
+            case "merge" -> Repository.merge(args[1]);
 
             default -> System.out.println("No command with that name exists.");
         }
@@ -79,7 +80,7 @@ public class Main {
                     return false;
                 }
             }
-            case "add", "rm", "commit", "branch", "rm-branch", "find" -> {
+            case "add", "rm", "commit", "branch", "rm-branch", "find", "reset", "merge" -> {
                 if (args.length != 2) {
                     System.out.println("Incorrect operands.");
                     return false;

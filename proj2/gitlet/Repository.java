@@ -309,4 +309,122 @@ public class Repository {
             System.out.println(id);
         }
     }
+
+    //---------------------- Below is the code fot MERGE ----------------------
+
+    /**
+     * A function that finds the split point of current commit and given branch
+     * <p>
+     * This function will check for:
+     * <p>
+     * 1. If the split point is the same commit as the given branch
+     * <p>
+     * 2. If the split point is the current branch, then the effect is to check out the given branch
+     * And handle the corresponding log, then return NULL
+     * <p>
+     * Otherwise, return the split point
+     *
+     * @param current    current commit id
+     * @param sourceName given branch's NAME
+     * @return split point or null
+     */
+    private static Commit findSplitPoint(String current, String sourceName) {
+        String source = branches.get(sourceName);
+        HashMap<String, Integer> depthMap1 = traverse(current);
+        HashMap<String, Integer> depthMap2 = traverse(source);
+
+        String splitPoint = "";
+        int depth = Integer.MAX_VALUE;
+
+        for (String id : depthMap1.keySet()) {
+            if (depthMap2.containsKey(id)) {
+                if (depthMap1.get(id) < depth) {
+                    depth = depthMap1.get(id);
+                    splitPoint = id;
+                }
+            }
+        }
+
+        if (splitPoint.equals(current)) {
+            checkoutBranch(sourceName);
+            System.out.println("Current branch fast-forwarded.");
+            return null;
+        }
+        if (splitPoint.equals(source)) {
+            System.out.println("Given branch is an ancestor of the current branch.");
+            return null;
+        }
+
+        return Commit.load(splitPoint);
+    }
+
+    private static HashMap<String, Integer> traverse(String commitId) {
+        HashMap<String, Integer> record = new HashMap<>();
+        record.put(commitId, 0);
+
+        Queue<String> q = new ArrayDeque<>();
+        q.add(commitId);
+        while (!q.isEmpty()) {
+            String id = q.poll();
+            Commit commit = Commit.load(id);
+            assert commit != null;
+
+            // record parent
+            String parent = commit.getParent();
+            if (parent != null) {
+                record.put(parent, record.get(id) + 1);
+                q.add(parent);
+            }
+            //record second parent
+            String secondParent = commit.getSecondParent();
+            if (secondParent != null) {
+                record.put(secondParent, record.get(id) + 1);
+                q.add(secondParent);
+            }
+        }
+
+        return record;
+    }
+
+    /**
+     * Merge
+     *
+     * @param branchName branch name to merge from
+     */
+    public static void merge(String branchName) {
+        if (!StageArea.getAddition().isEmpty() || StageArea.getRemoval().isEmpty()) {
+            System.out.println("You have uncommitted changes.");
+            return;
+        }
+        if (!branches.containsKey(branchName)) {
+            System.out.println("A branch with that name does not exist.");
+            return;
+        }
+        if (HEAD.equals(branchName)) {
+            System.out.println("Cannot merge a branch with itself.");
+            return;
+        }
+
+        String currentId = branches.get(HEAD);
+        String sourceId = branches.get(branchName);
+        Commit current = getHeadCommit();
+        Commit source = Commit.load(sourceId);
+
+        // check for untracked files
+        List<String> filesInCWD = Utils.plainFilenamesIn(CWD);
+        if (filesInCWD == null)
+            filesInCWD = new ArrayList<>();
+        for (String file : filesInCWD) {
+            if (!current.ref.containsKey(file) && source.ref.containsKey(file)) {
+                System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                return;
+            }
+        }
+
+        Commit splitPoint = findSplitPoint(currentId, branchName);
+        if (splitPoint == null)
+            return;
+
+        // ---------------------- Main part of merge ----------------------
+    }
 }
