@@ -6,11 +6,9 @@ import java.util.*;
 import static gitlet.Utils.*;
 
 /**
- * Represents a gitlet repository.
- *  TODO: It's a good idea to give a description here of what else this Class
- *  does at a high level.
+ * Gitlet repository.
  * <p>
- * Saves the snapshots of files
+ * Handle all the commands.
  *
  * @author zxdcly
  */
@@ -26,11 +24,11 @@ public class Repository {
     /**
      * current HEAD (a branch name)
      */
-    public static String HEAD;
+    private static String HEAD;
     /**
      * Map which tracks the HEAD of each branch
      */
-    public static TreeMap<String, String> branches;
+    private static TreeMap<String, String> branches;
 
     /**
      * Load the saved variables
@@ -43,7 +41,8 @@ public class Repository {
         // if exists, should assure that the subdir exits
         File refDIR = join(Repository.GITLET_DIR, "refs");
         HEAD = readObject(join(refDIR, "HEAD"), String.class);
-        branches = (TreeMap<String, String>) readObject(join(refDIR, "heads"), TreeMap.class);
+        branches = (TreeMap<String, String>)
+                readObject(join(refDIR, "heads"), TreeMap.class);
         return true;
     }
 
@@ -67,7 +66,8 @@ public class Repository {
     public static void init() {
         // check if there already exits a repo
         if (GITLET_DIR.exists()) {
-            System.out.println("A Gitlet version-control system already exists in the current directory.");
+            System.out.println("A Gitlet version-control system already "
+                    + "exists in the current directory.");
             return;
         }
         // create .gitlet dir, structure:
@@ -163,7 +163,8 @@ public class Repository {
             System.out.println("commit " + id);
             String sp = c.getSecondParent();
             if (sp != null) {
-                System.out.println("Merge: " + c.getParent().substring(0, 7) + " " + sp.substring(0, 7));
+                System.out.println("Merge: " + c.getParent().substring(0, 7)
+                        + " " + sp.substring(0, 7));
             }
             System.out.println("Date: " + c.getTimeString());
             System.out.println(c.getMessage());
@@ -186,7 +187,8 @@ public class Repository {
      * @return fixed id
      */
     public static String fixCommitId(String id) {
-        for (String fName : Objects.requireNonNull(join(GITLET_DIR, "blobs", "commits").list())) {
+        for (String fName
+                : Objects.requireNonNull(join(GITLET_DIR, "blobs", "commits").list())) {
             if (fName.startsWith(id)) {
                 return fName;
             }
@@ -207,11 +209,12 @@ public class Repository {
             System.out.println("No commit with that id exists.");
             return;
         }
-        if (!c.ref.containsKey(fileName)) {
+        if (!c.getRef().containsKey(fileName)) {
             System.out.println("File does not exist in that commit.");
             return;
         }
-        byte[] fileContent = readContents(join(GITLET_DIR, "blobs", "snapshots", c.ref.get(fileName)));
+        byte[] fileContent = readContents(join(GITLET_DIR, "blobs",
+                "snapshots", c.getRef().get(fileName)));
         writeContents(join(CWD, fileName), (Object) fileContent);
     }
 
@@ -223,8 +226,9 @@ public class Repository {
     private static void checkout(String dstCommitId) {
         // get all files in the CWD
         List<String> filesInCWD = plainFilenamesIn(CWD);
-        if (filesInCWD == null)
+        if (filesInCWD == null) {
             filesInCWD = new ArrayList<>();
+        }
         // get the current commit and destination commit
         Commit cur = getHeadCommit();
         Commit dst = Commit.load(dstCommitId);
@@ -232,15 +236,16 @@ public class Repository {
 
         // check for untracked files
         for (String file : filesInCWD) {
-            if (!cur.ref.containsKey(file) && dst.ref.containsKey(file)) {
-                System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+            if (!cur.getRef().containsKey(file) && dst.getRef().containsKey(file)) {
+                System.out.println("There is an untracked file in the way; "
+                        + "delete it, or add and commit it first.");
                 return;
             }
         }
         // do checkout
-        dst.ref.forEach((file, hash) -> {
+        dst.getRef().forEach((file, hash) -> {
             // write new contents
-            if (cur.ref.getOrDefault(file, "").equals(hash)) {
+            if (cur.getRef().getOrDefault(file, "").equals(hash)) {
                 // skip if file is the same as cur
                 return;
             }
@@ -249,9 +254,11 @@ public class Repository {
         });
         for (String file : filesInCWD) {
             // delete files not in new branch
-            if (!dst.ref.containsKey(file)) {
+            if (!dst.getRef().containsKey(file)) {
                 File fileToRm = join(CWD, file);
-                if (fileToRm.exists()) fileToRm.delete();
+                if (fileToRm.exists()) {
+                    fileToRm.delete();
+                }
             }
         }
 
@@ -412,11 +419,13 @@ public class Repository {
      */
     private static void handleConflict(String fileName, String sourceHash, String currentHash) {
         byte[] sourceFile = new byte[0], currentFile = new byte[0];
-        if (sourceHash != null)
+        if (sourceHash != null) {
             sourceFile = readContents(join(GITLET_DIR, "blobs", "snapshots", sourceHash));
+        }
 
-        if (currentHash != null)
+        if (currentHash != null) {
             currentFile = readContents(join(GITLET_DIR, "blobs", "snapshots", currentHash));
+        }
 
         writeContents(join(CWD, fileName),
                 "<<<<<<< HEAD\n",
@@ -456,34 +465,37 @@ public class Repository {
 
         // check for untracked files
         List<String> filesInCWD = plainFilenamesIn(CWD);
-        if (filesInCWD == null)
+        if (filesInCWD == null) {
             filesInCWD = new ArrayList<>();
+        }
         for (String file : filesInCWD) {
-            if (!current.ref.containsKey(file) && source.ref.containsKey(file)) {
-                System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+            if (!current.getRef().containsKey(file) && source.getRef().containsKey(file)) {
+                System.out.println("There is an untracked file in the way; "
+                        + "delete it, or add and commit it first.");
                 return;
             }
         }
 
         Commit splitPoint = findSplitPoint(currentId, branchName);
-        if (splitPoint == null)
+        if (splitPoint == null) {
             return;
+        }
 
         // ---------------------- Main part of merge ----------------------
         boolean hasConflict = false;
         // collect all files
         Set<String> allFiles = new HashSet<>();
-        allFiles.addAll(source.ref.keySet());
-        allFiles.addAll(splitPoint.ref.keySet());
-        allFiles.addAll(current.ref.keySet());
+        allFiles.addAll(source.getRef().keySet());
+        allFiles.addAll(splitPoint.getRef().keySet());
+        allFiles.addAll(current.getRef().keySet());
 
         for (String file : allFiles) {
-            if (source.ref.containsKey(file) &&
-                    current.ref.containsKey(file) &&
-                    splitPoint.ref.containsKey(file)) {
-                String sourceHash = source.ref.get(file);
-                String currentHash = current.ref.get(file);
-                String spHash = splitPoint.ref.get(file);
+            if (source.getRef().containsKey(file)
+                    && current.getRef().containsKey(file)
+                    && splitPoint.getRef().containsKey(file)) {
+                String sourceHash = source.getRef().get(file);
+                String currentHash = current.getRef().get(file);
+                String spHash = splitPoint.getRef().get(file);
                 if (!sourceHash.equals(spHash) && currentHash.equals(spHash)) {
                     // 1.
                     checkout(file, sourceId);
@@ -495,36 +507,36 @@ public class Repository {
                 } else if (sourceHash.equals(currentHash) && sourceHash.equals(spHash)) {
                     // 3. both modified
                     continue;
-                } else if (!sourceHash.equals(spHash) &&
-                        !currentHash.equals(spHash) &&
-                        !sourceHash.equals(currentHash)) {
+                } else if (!sourceHash.equals(spHash)
+                        && !currentHash.equals(spHash)
+                        && !sourceHash.equals(currentHash)) {
                     // 8. both modified
                     hasConflict = true;
                     handleConflict(file, sourceHash, currentHash);
                     continue;
                 }
-            } else if (!source.ref.containsKey(file) &&
-                    current.ref.containsKey(file) &&
-                    !splitPoint.ref.containsKey(file)) {
+            } else if (!source.getRef().containsKey(file)
+                    && current.getRef().containsKey(file)
+                    && !splitPoint.getRef().containsKey(file)) {
                 // 4.
                 continue;
-            } else if (source.ref.containsKey(file) &&
-                    !current.ref.containsKey(file) &&
-                    !splitPoint.ref.containsKey(file)) {
+            } else if (source.getRef().containsKey(file)
+                    && !current.getRef().containsKey(file)
+                    && !splitPoint.getRef().containsKey(file)) {
                 // 5.
                 checkout(file, sourceId);
                 StageArea.add(join(CWD, file));
                 continue;
-            } else if (!source.ref.containsKey(file) &&
-                    !current.ref.containsKey(file) &&
-                    splitPoint.ref.containsKey(file)) {
+            } else if (!source.getRef().containsKey(file)
+                    && !current.getRef().containsKey(file)
+                    && splitPoint.getRef().containsKey(file)) {
                 // 3. both deleted
                 continue;
-            } else if (!source.ref.containsKey(file) &&
-                    current.ref.containsKey(file) &&
-                    splitPoint.ref.containsKey(file)) {
-                String currentHash = current.ref.get(file);
-                String spHash = splitPoint.ref.get(file);
+            } else if (!source.getRef().containsKey(file)
+                    && current.getRef().containsKey(file)
+                    && splitPoint.getRef().containsKey(file)) {
+                String currentHash = current.getRef().get(file);
+                String spHash = splitPoint.getRef().get(file);
                 if (currentHash.equals(spHash)) {
                     // 6.
                     StageArea.rm(join(CWD, file));
@@ -534,11 +546,11 @@ public class Repository {
                     handleConflict(file, null, currentHash);
                 }
                 continue;
-            } else if (source.ref.containsKey(file) &&
-                    !current.ref.containsKey(file) &&
-                    splitPoint.ref.containsKey(file)) {
-                String sourceHash = source.ref.get(file);
-                String spHash = splitPoint.ref.get(file);
+            } else if (source.getRef().containsKey(file)
+                    && !current.getRef().containsKey(file)
+                    && splitPoint.getRef().containsKey(file)) {
+                String sourceHash = source.getRef().get(file);
+                String spHash = splitPoint.getRef().get(file);
                 if (sourceHash.equals(spHash)) {
                     // 7.
                     continue;
@@ -548,11 +560,11 @@ public class Repository {
                     handleConflict(file, sourceHash, null);
                 }
 
-            } else if (source.ref.containsKey(file) &&
-                    current.ref.containsKey(file) &&
-                    !splitPoint.ref.containsKey(file)) {
-                String sourceHash = source.ref.get(file);
-                String currentHash = current.ref.get(file);
+            } else if (source.getRef().containsKey(file)
+                    && current.getRef().containsKey(file)
+                    && !splitPoint.getRef().containsKey(file)) {
+                String sourceHash = source.getRef().get(file);
+                String currentHash = current.getRef().get(file);
                 if (!sourceHash.equals(currentHash)) {
                     // 8. not in sp, both modified
                     hasConflict = true;
@@ -566,5 +578,14 @@ public class Repository {
         if (hasConflict) {
             System.out.println("Encountered a merge conflict.");
         }
+    }
+
+    // some getters and setters
+    public static String getHEAD() {
+        return HEAD;
+    }
+
+    public static TreeMap<String, String> getBranches() {
+        return branches;
     }
 }

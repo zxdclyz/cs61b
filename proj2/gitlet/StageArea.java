@@ -10,7 +10,7 @@ import java.util.Set;
 import static gitlet.Utils.*;
 
 /**
- * Represents a gitlet staging area.
+ * Staging area.
  * <p>
  * Saves the staged files
  *
@@ -61,7 +61,8 @@ public class StageArea {
         if (!Repository.GITLET_DIR.exists()) {
             return;
         }
-        writeObject(join(Repository.GITLET_DIR, "index"), Objects.requireNonNullElseGet(data, StagedData::new));
+        writeObject(join(Repository.GITLET_DIR, "index"),
+                Objects.requireNonNullElseGet(data, StagedData::new));
     }
 
 
@@ -80,7 +81,7 @@ public class StageArea {
         String hash = sha1((Object) content);
         Commit head = Repository.getHeadCommit();
 
-        if (head.ref.containsKey(fileName) && head.ref.get(fileName).equals(hash)) {
+        if (head.getRef().containsKey(fileName) && head.getRef().get(fileName).equals(hash)) {
             // not modified, remove it
             data.addition.remove(fileName);
             data.contents.remove(fileName);
@@ -109,10 +110,12 @@ public class StageArea {
         }
         // remove the file if tracked
         Commit head = Repository.getHeadCommit();
-        if (head.ref.containsKey(fileName)) {
+        if (head.getRef().containsKey(fileName)) {
             rm = true;
             data.removal.add(fileName);
-            if (f.exists()) f.delete();
+            if (f.exists()) {
+                f.delete();
+            }
         }
         if (!rm) {
             System.out.println("No reason to remove the file.");

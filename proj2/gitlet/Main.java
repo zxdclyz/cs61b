@@ -100,8 +100,8 @@ public class Main {
     private static void status() {
         // branches
         System.out.println("=== Branches ===");
-        for (String b : Repository.branches.keySet()) {
-            if (b.equals(Repository.HEAD)) {
+        for (String b : Repository.getBranches().keySet()) {
+            if (b.equals(Repository.getHEAD())) {
                 System.out.println("*" + b);
             } else {
                 System.out.println(b);

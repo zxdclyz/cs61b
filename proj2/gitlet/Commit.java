@@ -7,9 +7,7 @@ import java.util.*;
 import static gitlet.Utils.*;
 
 /**
- * Represents a gitlet commit object.
- *  TODO: It's a good idea to give a description here of what else this Class
- *  does at a high level.
+ * Gitlet commit.
  *
  * @author zxdclyz
  */
@@ -35,7 +33,7 @@ public class Commit implements Serializable {
     /**
      * Reference of files tracked in this commit
      */
-    public HashMap<String, String> ref;
+    private HashMap<String, String> ref;
 
     /**
      * Create an init Commit
@@ -65,7 +63,8 @@ public class Commit implements Serializable {
             // update the ref
             this.ref.put(fileName, hash);
             // save the new snapshot
-            writeContents(join(Repository.GITLET_DIR, "blobs", "snapshots", hash), (Object) contents.get(fileName));
+            writeContents(join(Repository.GITLET_DIR, "blobs", "snapshots", hash),
+                    (Object) contents.get(fileName));
         }
         for (String fileName : removal) {
             this.ref.remove(fileName);
@@ -93,6 +92,10 @@ public class Commit implements Serializable {
 
     public Date getTimestamp() {
         return this.timestamp;
+    }
+
+    public HashMap<String, String> getRef() {
+        return this.ref;
     }
 
     public String getTimeString() {

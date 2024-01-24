@@ -1,17 +1,9 @@
 package gitlet;
 
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -183,13 +175,12 @@ class Utils {
     /**
      * Filter out all but plain files.
      */
-    private static final FilenameFilter PLAIN_FILES =
-            new FilenameFilter() {
-                @Override
-                public boolean accept(File dir, String name) {
-                    return new File(dir, name).isFile();
-                }
-            };
+    private static final FilenameFilter PLAIN_FILES = new FilenameFilter() {
+        @Override
+        public boolean accept(File dir, String name) {
+            return new File(dir, name).isFile();
+        }
+    };
 
     /**
      * Returns a list of the names of all plain files in the directory DIR, in
@@ -215,22 +206,10 @@ class Utils {
         return plainFilenamesIn(new File(dir));
     }
 
-    /* OTHER FILE UTILITIES */
-
-    /**
-     * Return the concatentation of FIRST and OTHERS into a File designator,
-     * analogous to the {@link java.nio.file.Paths.#get(String, String[])}
-     * method.
-     */
-     static File join(String first, String... others) {
+    static File join(String first, String... others) {
         return Paths.get(first, others).toFile();
     }
 
-    /**
-     * Return the concatentation of FIRST and OTHERS into a File designator,
-     * analogous to the {@link java.nio.file.Paths.#get(String, String[])}
-     * method.
-     */
     static File join(File first, String... others) {
         return Paths.get(first.getPath(), others).toFile();
     }
@@ -258,7 +237,7 @@ class Utils {
     /* MESSAGES AND ERROR REPORTING */
 
     /**
-     * Return a GitletException whose message is composed from MSG and ARGS as
+     * Return a GitletException whose message is composed of MSG and ARGS as
      * for the String.format method.
      */
     static GitletException error(String msg, Object... args) {
