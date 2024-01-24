@@ -99,7 +99,7 @@ public class Repository {
     }
 
     public static void commit(String message) {
-        if (message == null || message.length() == 0) {
+        if (message == null || message.isEmpty()) {
             System.out.println("Please enter a commit message.");
         }
         HashMap<String, String> addition = StageArea.getAddition();
@@ -110,6 +110,23 @@ public class Repository {
         }
         // create the new commit
         Commit c = new Commit(message, branches.get(HEAD));
+        String sha1 = c.save();
+        StageArea.clear();
+        branches.put(HEAD, sha1);
+    }
+
+    public static void commit(String message, String secondParent) {
+        if (message == null || message.isEmpty()) {
+            System.out.println("Please enter a commit message.");
+        }
+        HashMap<String, String> addition = StageArea.getAddition();
+        ArrayList<String> removal = StageArea.getRemoval();
+        if (addition.isEmpty() && removal.isEmpty()) {
+            System.out.println("No changes added to the commit.");
+            return;
+        }
+        // create the new commit
+        Commit c = new Commit(message, branches.get(HEAD), secondParent);
         String sha1 = c.save();
         StageArea.clear();
         branches.put(HEAD, sha1);
@@ -205,7 +222,7 @@ public class Repository {
      */
     private static void checkout(String dstCommitId) {
         // get all files in the CWD
-        List<String> filesInCWD = Utils.plainFilenamesIn(CWD);
+        List<String> filesInCWD = plainFilenamesIn(CWD);
         if (filesInCWD == null)
             filesInCWD = new ArrayList<>();
         // get the current commit and destination commit
@@ -387,6 +404,31 @@ public class Repository {
     }
 
     /**
+     * Handle merge conflict of given file
+     *
+     * @param fileName    name of the conflict file
+     * @param sourceHash  hash of the file in source branch, null if not exists
+     * @param currentHash hash of the file in current branch, null if not exists
+     */
+    private static void handleConflict(String fileName, String sourceHash, String currentHash) {
+        byte[] sourceFile = new byte[0], currentFile = new byte[0];
+        if (sourceHash != null)
+            sourceFile = readContents(join(GITLET_DIR, "blobs", "snapshots", sourceHash));
+
+        if (currentHash != null)
+            currentFile = readContents(join(GITLET_DIR, "blobs", "snapshots", currentHash));
+
+        writeContents(join(CWD, fileName),
+                "<<<<<<< HEAD\n",
+                currentFile,
+                "=======\n",
+                sourceFile,
+                ">>>>>>>\n");
+
+        StageArea.add(join(CWD, fileName));
+    }
+
+    /**
      * Merge
      *
      * @param branchName branch name to merge from
@@ -411,7 +453,7 @@ public class Repository {
         Commit source = Commit.load(sourceId);
 
         // check for untracked files
-        List<String> filesInCWD = Utils.plainFilenamesIn(CWD);
+        List<String> filesInCWD = plainFilenamesIn(CWD);
         if (filesInCWD == null)
             filesInCWD = new ArrayList<>();
         for (String file : filesInCWD) {
@@ -426,5 +468,101 @@ public class Repository {
             return;
 
         // ---------------------- Main part of merge ----------------------
+        boolean hasConflict = false;
+        // collect all files
+        Set<String> allFiles = new HashSet<>();
+        allFiles.addAll(source.ref.keySet());
+        allFiles.addAll(splitPoint.ref.keySet());
+        allFiles.addAll(current.ref.keySet());
+
+        for (String file : allFiles) {
+            if (source.ref.containsKey(file) &&
+                    current.ref.containsKey(file) &&
+                    splitPoint.ref.containsKey(file)) {
+                String sourceHash = source.ref.get(file);
+                String currentHash = current.ref.get(file);
+                String spHash = splitPoint.ref.get(file);
+                if (!sourceHash.equals(spHash) && currentHash.equals(spHash)) {
+                    // 1.
+                    checkout(file, sourceId);
+                    StageArea.add(join(CWD, file));
+                    continue;
+                } else if (sourceHash.equals(spHash) && !currentHash.equals(spHash)) {
+                    // 2.
+                    continue;
+                } else if (sourceHash.equals(currentHash) && sourceHash.equals(spHash)) {
+                    // 3. both modified
+                    continue;
+                } else if (!sourceHash.equals(spHash) &&
+                        !currentHash.equals(spHash) &&
+                        !sourceHash.equals(currentHash)) {
+                    // 8. both modified
+                    hasConflict = true;
+                    handleConflict(file, sourceHash, currentHash);
+                    continue;
+                }
+            } else if (!source.ref.containsKey(file) &&
+                    current.ref.containsKey(file) &&
+                    !splitPoint.ref.containsKey(file)) {
+                // 4.
+                continue;
+            } else if (source.ref.containsKey(file) &&
+                    !current.ref.containsKey(file) &&
+                    !splitPoint.ref.containsKey(file)) {
+                // 5.
+                checkout(file, sourceId);
+                StageArea.add(join(CWD, file));
+                continue;
+            } else if (!source.ref.containsKey(file) &&
+                    !current.ref.containsKey(file) &&
+                    splitPoint.ref.containsKey(file)) {
+                // 3. both deleted
+                continue;
+            } else if (!source.ref.containsKey(file) &&
+                    current.ref.containsKey(file) &&
+                    splitPoint.ref.containsKey(file)) {
+                String currentHash = current.ref.get(file);
+                String spHash = splitPoint.ref.get(file);
+                if (currentHash.equals(spHash)) {
+                    // 6.
+                    StageArea.rm(join(CWD, file));
+                } else {
+                    // 8. current modified, source deleted
+                    hasConflict = true;
+                    handleConflict(file, null, currentHash);
+                }
+                continue;
+            } else if (source.ref.containsKey(file) &&
+                    !current.ref.containsKey(file) &&
+                    splitPoint.ref.containsKey(file)) {
+                String sourceHash = source.ref.get(file);
+                String spHash = splitPoint.ref.get(file);
+                if (sourceHash.equals(spHash)) {
+                    // 7.
+                    continue;
+                } else {
+                    // 8. source modified, current deleted
+                    hasConflict = true;
+                    handleConflict(file, sourceHash, null);
+                }
+
+            } else if (source.ref.containsKey(file) &&
+                    current.ref.containsKey(file) &&
+                    !splitPoint.ref.containsKey(file)) {
+                String sourceHash = source.ref.get(file);
+                String currentHash = current.ref.get(file);
+                if (!sourceHash.equals(currentHash)) {
+                    // 8. not in sp, both modified
+                    hasConflict = true;
+                    handleConflict(file, sourceHash, currentHash);
+                }
+            }
+        }
+
+        // commit the merge
+        commit("Merged " + branchName + " into " + HEAD + ".", sourceId);
+        if (hasConflict) {
+            System.out.println("Encountered a merge conflict.");
+        }
     }
 }

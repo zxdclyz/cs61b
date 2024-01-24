@@ -74,6 +74,11 @@ public class Commit implements Serializable {
         this.timestamp = new Date();
     }
 
+    public Commit(String message, String parent, String secondParent) {
+        this(message, parent);
+        this.secondParent = secondParent;
+    }
+
     public String getMessage() {
         return this.message;
     }
