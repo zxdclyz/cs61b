@@ -113,7 +113,9 @@ public class Commit implements Serializable {
 
     public static Commit load(String sha1) {
         File f = join(Repository.GITLET_DIR, "blobs", "commits", sha1);
-        assert f.exists();
+        if (!f.exists()) {
+            return null;
+        }
         return readObject(f, Commit.class);
     }
 }

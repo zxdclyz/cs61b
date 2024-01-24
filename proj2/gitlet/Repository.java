@@ -434,7 +434,7 @@ public class Repository {
      * @param branchName branch name to merge from
      */
     public static void merge(String branchName) {
-        if (!StageArea.getAddition().isEmpty() || StageArea.getRemoval().isEmpty()) {
+        if (!StageArea.getAddition().isEmpty() || !StageArea.getRemoval().isEmpty()) {
             System.out.println("You have uncommitted changes.");
             return;
         }
@@ -451,6 +451,8 @@ public class Repository {
         String sourceId = branches.get(branchName);
         Commit current = getHeadCommit();
         Commit source = Commit.load(sourceId);
+
+        assert source != null;
 
         // check for untracked files
         List<String> filesInCWD = plainFilenamesIn(CWD);
